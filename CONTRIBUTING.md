@@ -38,7 +38,7 @@ go test -cover ./...
 
 # Build for multiple platforms
 GOOS=linux GOARCH=amd64 go build -o foenixmgr-linux-amd64 .
-GOOS=darwin GOARCH=amd64 go build -o foenixmgr-darwin-amd64 .
+GOOS=darwin GOARCH=arm64 go build -o foenixmgr-darwin-amd64 .
 GOOS=windows GOARCH=amd64 go build -o foenixmgr-windows-amd64.exe .
 ```
 
