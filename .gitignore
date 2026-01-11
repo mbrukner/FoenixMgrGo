@@ -1,0 +1,61 @@
+# Binaries for programs and plugins
+foenixmgr
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.txt
+coverage.html
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python files (from old version)
+*.pyc
+__pycache__/
+.venv/
+venv/
+
+# User configuration (see foenixmgr.ini.example)
+/foenixmgr.ini
+
+# Test files and temporary data
+*.bin
+*.hex
+*.srec
+*.pgx
+*.pgz
+kernel.bin
+bounce.s19
+*.stp
+f256.stp
+
+# Build artifacts
+dist/
+build/
+*.tar.gz
+*.zip
+
+# Temporary and debug files
+*.log
+debug
+debug.test

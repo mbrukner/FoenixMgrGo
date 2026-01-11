@@ -1,0 +1,43 @@
+# FoenixMgr Configuration File
+#
+# Copy this file to foenixmgr.ini and customize for your setup.
+# FoenixMgr searches for foenixmgr.ini in the following order:
+#   1. Current directory (./foenixmgr.ini)
+#   2. $FOENIXMGR directory ($FOENIXMGR/foenixmgr.ini)
+#   3. Home directory (~/foenixmgr.ini)
+
+[DEFAULT]
+
+# Serial port or TCP address
+# Examples:
+#   Linux: /dev/ttyUSB0, /dev/ttyXR, /dev/ttyACM0
+#   macOS: /dev/cu.usbserial-*
+#   Windows: COM3, COM4
+#   TCP: 192.168.1.114:2560
+port=/dev/ttyUSB0
+
+# CPU type: 6502, 65c02, 65816, 68000, 68040, 68060
+# Important: 68040/68060 require special 32-bit aligned operations
+cpu=68040
+
+# Serial data rate (baud rate)
+# Default: 6000000 (6 Mbps)
+data_rate=6000000
+
+# Upload chunk size in bytes
+# Smaller values are more reliable, larger values are faster
+# Default: 4096
+chunk_size=4096
+
+# Flash memory size in bytes
+# Default: 524288 (512 KB)
+flash_size=524288
+
+# Label file for symbolic debugging
+# Used by lookup and deref commands
+labels=basic8
+
+# Default RAM address for uploads (hexadecimal, no 0x prefix)
+# A2560: 380000 (3.5 MB into RAM)
+# F256:  010000 (64 KB into RAM)
+address=380000
