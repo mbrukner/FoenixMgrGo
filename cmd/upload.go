@@ -236,10 +236,18 @@ func uploadBinary(filename string) error {
 		defer dp.ExitDebug()
 	}
 
-	// Upload binary
+	// Upload binary in chunks (matching Python behavior)
 	printInfo("Uploading %d bytes to 0x%X...\n", len(data), addr)
-	if err := dp.WriteBlock(addr, data); err != nil {
-		return fmt.Errorf("upload failed: %w", err)
+	chunkSize := cfg.ChunkSize
+	for offset := 0; offset < len(data); offset += chunkSize {
+		end := offset + chunkSize
+		if end > len(data) {
+			end = len(data)
+		}
+		chunk := data[offset:end]
+		if err := dp.WriteBlock(addr+uint32(offset), chunk); err != nil {
+			return fmt.Errorf("upload failed at offset 0x%X: %w", offset, err)
+		}
 	}
 
 	printInfo("Upload complete.\n")
@@ -288,10 +296,18 @@ func uploadM68kBinary(filename string) error {
 		defer dp.ExitDebug()
 	}
 
-	// Upload binary to target address
+	// Upload binary to target address in chunks
 	printInfo("Uploading %d bytes to 0x%X...\n", len(data), addr)
-	if err := dp.WriteBlock(addr, data); err != nil {
-		return fmt.Errorf("upload failed: %w", err)
+	chunkSize := cfg.ChunkSize
+	for offset := 0; offset < len(data); offset += chunkSize {
+		end := offset + chunkSize
+		if end > len(data) {
+			end = len(data)
+		}
+		chunk := data[offset:end]
+		if err := dp.WriteBlock(addr+uint32(offset), chunk); err != nil {
+			return fmt.Errorf("upload failed at offset 0x%X: %w", offset, err)
+		}
 	}
 
 	// Copy first 8 bytes (initial SP and reset vector) to address 0
