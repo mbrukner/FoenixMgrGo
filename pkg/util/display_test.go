@@ -46,7 +46,7 @@ func TestParseHexSize(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
-		expected uint16
+		expected uint32
 		wantErr  bool
 	}{
 		{"Simple hex", "10", 0x10, false},
@@ -55,7 +55,9 @@ func TestParseHexSize(t *testing.T) {
 		{"Uppercase", "FF", 0xFF, false},
 		{"Lowercase", "ff", 0xFF, false},
 		{"Zero", "0", 0, false},
-		{"Max 16-bit", "FFFF", 0xFFFF, false},
+		{"Full flash dump", "80000", 0x80000, false},
+		{"Max 32-bit", "FFFFFFFF", 0xFFFFFFFF, false},
+		{"32-bit overflow", "100000000", 0, true},
 		{"Invalid characters", "XYZ", 0, true},
 		{"Empty string", "", 0, true},
 	}
@@ -84,7 +86,7 @@ func TestHexDump(t *testing.T) {
 	data := []byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
 		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
 		0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F, // "Hello Wo"
-		0x72, 0x6C, 0x64, 0x21, 0x00, 0xFF}                // "rld!"
+		0x72, 0x6C, 0x64, 0x21, 0x00, 0xFF} // "rld!"
 
 	// This is mainly a smoke test - we're just checking it doesn't panic
 	HexDump(data, 0x1000)

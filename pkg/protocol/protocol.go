@@ -17,6 +17,11 @@ type DebugPort struct {
 	status1 byte
 }
 
+// The debug-port firmware is reliable with responses up to 1 KiB. Larger
+// logical reads are split into multiple protocol transactions by ReadBlock.
+const maxReadTransactionSize uint32 = 1024
+const maxProtocolAddress uint32 = 0xFFFFFF
+
 // NewDebugPort creates a new DebugPort instance
 func NewDebugPort(conn connection.Connection, cfg *config.Config) *DebugPort {
 	return &DebugPort{
@@ -49,10 +54,12 @@ func (dp *DebugPort) GetStatus1() byte {
 // This is the core protocol method that handles the binary protocol communication
 //
 // Request packet format (7-byte header + data + 1-byte LRC):
-//   [0x55][CMD][ADDR_HI][ADDR_MID][ADDR_LO][LEN_HI][LEN_LO][...DATA...][LRC]
+//
+//	[0x55][CMD][ADDR_HI][ADDR_MID][ADDR_LO][LEN_HI][LEN_LO][...DATA...][LRC]
 //
 // Response packet format:
-//   [0xAA][STATUS0][STATUS1][...DATA...][LRC]
+//
+//	[0xAA][STATUS0][STATUS1][...DATA...][LRC]
 func (dp *DebugPort) transfer(command byte, address uint32, data []byte, readLength uint16) ([]byte, error) {
 	// Reset status bytes
 	dp.status0 = 0
@@ -179,9 +186,33 @@ func (dp *DebugPort) GetRevision() (byte, error) {
 	return dp.status1, nil
 }
 
-// ReadBlock reads a block of data from the specified address
-func (dp *DebugPort) ReadBlock(address uint32, length uint16) ([]byte, error) {
-	return dp.transfer(CMDReadMem, address, nil, length)
+// ReadBlock reads a block of data from the specified address.
+// Reads larger than the debug port's response limit are assembled from
+// consecutive transactions.
+func (dp *DebugPort) ReadBlock(address uint32, length uint32) ([]byte, error) {
+	if address > maxProtocolAddress {
+		return nil, fmt.Errorf("read address 0x%X exceeds the 24-bit address space", address)
+	}
+	if length > maxProtocolAddress-address+1 {
+		return nil, fmt.Errorf("read of %d bytes at 0x%06X exceeds the 24-bit address space", length, address)
+	}
+
+	data := make([]byte, 0, length)
+
+	for offset := uint32(0); offset < length; {
+		chunkSize := min(length-offset, maxReadTransactionSize)
+		chunkAddress := address + offset
+
+		chunk, err := dp.transfer(CMDReadMem, chunkAddress, nil, uint16(chunkSize))
+		if err != nil {
+			return nil, fmt.Errorf("failed to read chunk at 0x%06X: %w", chunkAddress, err)
+		}
+
+		data = append(data, chunk...)
+		offset += chunkSize
+	}
+
+	return data, nil
 }
 
 // WriteBlock writes a block of data to the specified address

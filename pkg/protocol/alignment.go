@@ -29,7 +29,7 @@ func (dp *DebugPort) WriteBlock32(address uint32, data []byte) error {
 	}
 
 	// Read the current contents from the machine's RAM
-	block, err := dp.ReadBlock(adjustedAddress, uint16(adjustedSize))
+	block, err := dp.ReadBlock(adjustedAddress, adjustedSize)
 	if err != nil {
 		return fmt.Errorf("failed to read block for alignment: %w", err)
 	}

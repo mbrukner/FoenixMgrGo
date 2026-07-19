@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -79,19 +80,18 @@ func ParseHexAddress(s string) (uint32, error) {
 	return addr, nil
 }
 
-// ParseHexSize parses a hexadecimal size string (with or without 0x/$ prefix)
-func ParseHexSize(s string) (uint16, error) {
+// ParseHexSize parses a hexadecimal size string (with or without 0x/$ prefix).
+func ParseHexSize(s string) (uint32, error) {
 	// Remove 0x or $ prefix if present
 	s = strings.TrimPrefix(s, "0x")
 	s = strings.TrimPrefix(s, "0X")
 	s = strings.TrimPrefix(s, "$")
 
-	var size uint16
-	_, err := fmt.Sscanf(s, "%x", &size)
+	size, err := strconv.ParseUint(s, 16, 32)
 	if err != nil {
 		return 0, fmt.Errorf("invalid hex size '%s': %w", s, err)
 	}
-	return size, nil
+	return uint32(size), nil
 }
 
 // ReadFile reads an entire file and returns its contents
