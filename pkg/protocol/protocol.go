@@ -49,10 +49,12 @@ func (dp *DebugPort) GetStatus1() byte {
 // This is the core protocol method that handles the binary protocol communication
 //
 // Request packet format (7-byte header + data + 1-byte LRC):
-//   [0x55][CMD][ADDR_HI][ADDR_MID][ADDR_LO][LEN_HI][LEN_LO][...DATA...][LRC]
+//
+//	[0x55][CMD][ADDR_HI][ADDR_MID][ADDR_LO][LEN_HI][LEN_LO][...DATA...][LRC]
 //
 // Response packet format:
-//   [0xAA][STATUS0][STATUS1][...DATA...][LRC]
+//
+//	[0xAA][STATUS0][STATUS1][...DATA...][LRC]
 func (dp *DebugPort) transfer(command byte, address uint32, data []byte, readLength uint16) ([]byte, error) {
 	// Reset status bytes
 	dp.status0 = 0
@@ -142,28 +144,26 @@ func (dp *DebugPort) transfer(command byte, address uint32, data []byte, readLen
 	return readBytes, nil
 }
 
-// EnterDebug sends the command to make the Foenix enter debug mode
-// This stops the CPU and enables debug commands
+// EnterDebug asserts CPU reset and gives the debugger control of the bus.
+// Use StopCPU instead when the running F256 program must be resumed.
 func (dp *DebugPort) EnterDebug() error {
 	_, err := dp.transfer(CMDEnterDebug, 0, nil, 0)
 	return err
 }
 
-// ExitDebug sends the command to make the Foenix leave debug mode
-// This will reset the CPU
+// ExitDebug releases the reset asserted by EnterDebug and restarts the CPU.
 func (dp *DebugPort) ExitDebug() error {
 	_, err := dp.transfer(CMDExitDebug, 0, nil, 0)
 	return err
 }
 
-// StopCPU sends the command to stop the CPU from processing instructions (F256 only)
+// StopCPU halts an F256 CPU through RDY without resetting it.
 func (dp *DebugPort) StopCPU() error {
 	_, err := dp.transfer(CMDStopCPU, 0, nil, 0)
 	return err
 }
 
-// StartCPU sends the command to restart the CPU after a stop (F256 only)
-// This command will not trigger a reset of the CPU
+// StartCPU resumes an F256 CPU halted by StopCPU without resetting it.
 func (dp *DebugPort) StartCPU() error {
 	_, err := dp.transfer(CMDStartCPU, 0, nil, 0)
 	return err

@@ -57,17 +57,26 @@ Example:
 		// Create protocol handler
 		dp := protocol.NewDebugPort(conn, cfg)
 
-		// Enter debug mode
+		// Halt an F256 through RDY while preserving its CPU state. The older
+		// EnterDebug/ExitDebug pair asserts and releases reset, which makes an
+		// otherwise read-only dump restart the running program.
 		isStopped := util.IsStopped()
 		if !isStopped {
-			if err := dp.EnterDebug(); err != nil {
-				return fmt.Errorf("failed to enter debug mode: %w", err)
+			if err := dp.StopCPU(); err != nil {
+				return fmt.Errorf("failed to stop CPU: %w", err)
 			}
-			defer dp.ExitDebug()
 		}
 
 		// Read memory
 		data, err := dp.ReadBlock(addr, count)
+		if !isStopped {
+			if startErr := dp.StartCPU(); startErr != nil {
+				if err != nil {
+					return fmt.Errorf("failed to read memory: %v; also failed to restart CPU: %w", err, startErr)
+				}
+				return fmt.Errorf("failed to restart CPU: %w", startErr)
+			}
+		}
 		if err != nil {
 			return fmt.Errorf("failed to read memory: %w", err)
 		}

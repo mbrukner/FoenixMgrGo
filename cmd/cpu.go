@@ -67,12 +67,7 @@ func stopCPU() error {
 	// Create protocol handler
 	dp := protocol.NewDebugPort(conn, cfg)
 
-	// Enter debug mode first
-	if err := dp.EnterDebug(); err != nil {
-		return fmt.Errorf("failed to enter debug mode: %w", err)
-	}
-
-	// Stop the CPU
+	// Halt through RDY. Unlike EnterDebug ($80), this preserves CPU state.
 	printInfo("Stopping CPU...\n")
 	if err := dp.StopCPU(); err != nil {
 		return fmt.Errorf("failed to stop CPU: %w", err)
@@ -109,15 +104,11 @@ func startCPU() error {
 	// Create protocol handler
 	dp := protocol.NewDebugPort(conn, cfg)
 
-	// Start the CPU (no need to enter debug mode, we're already in it)
+	// Resume the RDY-halted CPU without releasing the reset line: ExitDebug
+	// ($81) is the reset-release command and must not be sent here.
 	printInfo("Starting CPU...\n")
 	if err := dp.StartCPU(); err != nil {
 		return fmt.Errorf("failed to start CPU: %w", err)
-	}
-
-	// Exit debug mode
-	if err := dp.ExitDebug(); err != nil {
-		return fmt.Errorf("failed to exit debug mode: %w", err)
 	}
 
 	// Clear the stop indicator file

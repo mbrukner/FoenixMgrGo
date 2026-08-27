@@ -15,13 +15,14 @@ const (
 	CMDEraseSector   = 0x12 // Erase 4KB sector
 	CMDProgramSector = 0x13 // Program 4KB sector from RAM
 
-	// CPU control (F256 only)
-	CMDStopCPU  = 0x20 // Stop CPU execution
-	CMDStartCPU = 0x21 // Start CPU execution
+	// CPU control (F256 only). These use RDY and preserve execution state.
+	CMDStopCPU  = 0x20 // Halt CPU execution without reset
+	CMDStartCPU = 0x21 // Resume CPU execution without reset
 
-	// Debug mode
-	CMDEnterDebug = 0x80 // Enter debug mode (stops CPU, enables commands)
-	CMDExitDebug  = 0x81 // Exit debug mode (resets CPU)
+	// Reset-oriented debug mode. These are appropriate for loading a new
+	// program, but not for inspecting and resuming a running F256 program.
+	CMDEnterDebug = 0x80 // Assert CPU reset and take over the bus
+	CMDExitDebug  = 0x81 // Release CPU reset and restart execution
 
 	// Boot source (F256k)
 	CMDBootRAM   = 0x90 // Boot from RAM LUTs
